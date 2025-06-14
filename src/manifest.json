@@ -1,0 +1,8 @@
+{
+  "manifest_version": 3,
+  "name": "X Feed Viewer",
+  "version": "0.1",
+  "background": { "service_worker": "background.js" },
+  "permissions": ["storage", "identity", "scripting"],
+  "action": { "default_popup": "popup.html" }
+}
