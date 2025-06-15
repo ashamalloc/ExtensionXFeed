@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Twitter Feed Viewer Extension",
+  "version": "1.0",
+  "description": "View your friend’s Twitter (X) feed in read-only mode using their shared session.",
+  "permissions": ["storage", "scripting", "activeTab"],
+  "host_permissions": ["https://twitter.com/*", "https://x.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": "icon.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://twitter.com/*", "https://x.com/*"],
+      "js": ["contentScript.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "128": "icon.png"
+  }
+}
+
