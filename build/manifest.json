@@ -5,9 +5,6 @@
   "description": "View your friend’s Twitter (X) feed in read-only mode using their shared session.",
   "permissions": ["storage", "scripting", "activeTab"],
   "host_permissions": ["https://twitter.com/*", "https://x.com/*"],
-  "background": {
-    "service_worker": "background.js"
-  },
   "action": {
     "default_popup": "index.html",
     "default_icon": "icon.png"
@@ -23,4 +20,3 @@
     "128": "icon.png"
   }
 }
-
