@@ -9,6 +9,10 @@
     "default_popup": "index.html",
     "default_icon": "icon.png"
   },
+  "options_ui": {
+  "page": "index.html",
+  "open_in_tab": true
+},
   "content_scripts": [
     {
       "matches": ["https://twitter.com/*", "https://x.com/*"],
@@ -18,5 +22,11 @@
   ],
   "icons": {
     "128": "icon.png"
-  }
+  },
+   "web_accessible_resources": [
+    {
+      "resources": ["injectToken.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }

@@ -1,22 +1,4 @@
-chrome.storage.local.get("token", ({ token }) => {
-  if (!token) {
-    console.error("No token found in storage");
-    return;
-  }
-
-  chrome.runtime.sendMessage(
-    { type: "fetchFeed", authToken: token },
-    (response) => {
-      if (chrome.runtime.lastError) {
-        console.error("Runtime error:", chrome.runtime.lastError.message);
-        return;
-      }
-
-      if (response?.success) {
-        console.log("Feed:", response.feed);
-      } else {
-        console.error("Error fetching feed:", response?.error);
-      }
-    }
-  );
-});
+const script = document.createElement("script");
+script.src = chrome.runtime.getURL("injectToken.js");
+script.onload = () => script.remove();
+(document.head || document.documentElement).appendChild(script);

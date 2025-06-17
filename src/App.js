@@ -1,116 +1,76 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import "./App.css";
 
 function App() {
-  const [token, setToken] = useState("");
-  const [message, setMessage] = useState("");
-  const [tweets, setTweets] = useState([]);
+  const [username, setUsername] = useState("");
+  const [feed, setFeed] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Load token if already saved
-  useEffect(() => {
-    chrome.storage.local.get("token", (data) => {
-      if (data.token) setToken(data.token);
-    });
-  }, []);
-
-  // Handle token save
-  const handleSave = () => {
-    if (!token.trim()) {
-      setMessage("Please enter a valid token.");
-      return;
-    }
-
-    // Optional: Test token before saving
-    fetch("http://localhost:5000/twitter-feed", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          chrome.storage.local.set({ token }, () => {
-            setMessage("Token is valid and saved!");
-          });
-        } else {
-          setMessage("Token is not valid.");
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-        setMessage("Error validating token.");
-      });
-  };
-
-  // Fetch feed using saved token
   const fetchFeed = async () => {
-    if (!token.trim()) {
-      setMessage("Enter a valid token");
-      return;
-    }
+    const trimmedUsername = username.trim();
+    if (!trimmedUsername) return alert("Please enter a username");
 
+    const token = localStorage.getItem("twitter_auth_token");
+    const ct0 = localStorage.getItem("twitter_ct0");
+    const TWITTER_BEARER =
+  "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA"; 
+
+    if (!token || !ct0) return alert("Missing auth_token or ct0");
+
+    setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/twitter-feed", {
+        const res = await fetch("http://localhost:5000/twitter-feed", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${TWITTER_BEARER}`,
+          "x-csrf-token": ct0,
         },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({ username: trimmedUsername }),
       });
 
       const data = await res.json();
-
       if (data.success) {
-        const tweetsObj = data.feed.globalObjects?.tweets || {};
-        const tweetList = Object.values(tweetsObj);
-        setTweets(tweetList);
-        setMessage(`Fetched ${tweetList.length} tweets`);
+        setFeed(data.feed);
       } else {
-        setMessage(`Error: ${data.error}`);
+        setFeed([]);
+        alert("Error: " + (data.error || "Unknown error"));
       }
     } catch (err) {
-      console.error(err);
-      setMessage(`Fetch failed: ${err.message}`);
+      setFeed([]);
+      alert("Network error: " + err.message);
+    } finally {
+      setLoading(false);
     }
   };
+  
 
   return (
-    <div className="popup" style={{ padding: 16, width: 300 }}>
+    <div className="app">
       <h2>Twitter Feed Viewer</h2>
 
       <input
         type="text"
-        placeholder="Enter auth token"
-        value={token}
-        onChange={(e) => setToken(e.target.value)}
-        style={{ width: "100%", marginBottom: 10 }}
+        placeholder="Enter Twitter username"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
       />
 
-      <div style={{ display: "flex", gap: "10px", marginBottom: 10 }}>
-        <button onClick={handleSave}>Save Token</button>
-        <button onClick={fetchFeed}>Fetch Feed</button>
-      </div>
+      <button onClick={fetchFeed} disabled={loading}>
+        {loading ? "Fetching..." : "Get Feed"}
+      </button>
 
-      <p>{message}</p>
-
-      {tweets.length > 0 && (
-        <div
-          style={{
-            maxHeight: 250,
-            overflowY: "auto",
-            border: "1px solid #ccc",
-            padding: "8px",
-            borderRadius: "4px",
-          }}
-        >
-          {tweets.map((tweet) => (
-            <div key={tweet.id_str} style={{ marginBottom: 10 }}>
-              <strong>@{tweet.user?.screen_name || "user"}</strong>
-              <p style={{ margin: 0 }}>{tweet.full_text || tweet.text}</p>
-              <hr />
-            </div>
-          ))}
-        </div>
-      )}
+      <ul className="feed-list">
+        {feed.length === 0 && !loading ? (
+          <li>No tweets to display</li>
+        ) : (
+          feed.map((item) => (
+            <li key={item.id || item.text.slice(0, 20)} className="feed-item">
+              <strong>@{username.trim()}</strong>: {item.full_text || item.text}
+            </li>
+          ))
+        )}
+      </ul>
     </div>
   );
 }
