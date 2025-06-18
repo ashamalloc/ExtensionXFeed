@@ -68,5 +68,10 @@ class FeedRenderer {
     `;
   }
 }
-
+function openFullView(accountName) {
+  chrome.runtime.sendMessage({
+    action: 'openFullFeed',
+    accountName
+  });
+}
 new FeedRenderer();

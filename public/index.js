@@ -44,5 +44,16 @@ async function updateAccountList() {
   });
 }
 
+
+document.getElementById('view-full').addEventListener('click', () => {
+  const account = document.getElementById('account-switcher').value;
+  chrome.windows.create({
+    url: `feed.html?account=${encodeURIComponent(account)}`,
+    type: 'popup',
+    width: 800,
+    height: 1000
+  });
+});
+
 // Load accounts on popup open
 updateAccountList();
