@@ -1,0 +1,54 @@
+body {
+  width: 300px;
+  padding: 16px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.logo {
+  width: 24px;
+  margin-right: 10px;
+}
+
+.token-form {
+  margin-bottom: 20px;
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+textarea {
+  height: 60px;
+  resize: vertical;
+}
+
+.primary-btn {
+  background: #1DA1F2;
+  color: white;
+  border: none;
+  padding: 10px;
+  width: 100%;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.secondary-btn {
+  background: white;
+  color: #1DA1F2;
+  border: 1px solid #1DA1F2;
+  padding: 8px;
+  width: 100%;
+  border-radius: 4px;
+  margin-top: 10px;
+  cursor: pointer;
+}

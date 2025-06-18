@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="feed.css">
+</head>
+<body>
+  <div class="feed-header">
+    <h1>@<span id="current-username">username</span>'s Feed</h1>
+    <button id="close-feed">← Back to Extension</button>
+  </div>
+  
+  <div class="feed-container" id="feed">
+    <!-- Tweets will be injected here -->
+  </div>
+  
+  <div class="loading" id="loading">
+    <img src="../assets/loading-spinner.svg" alt="Loading">
+  </div>
+
+  <script src="feed.js"></script>
+</body>
+</html>

@@ -1,10 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Twitter Feed Viewer</title>
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<html>
+<head>
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <div class="header">
+    <img src="icon.png" alt="X Logo" class="logo">
+    <h1>Feed Viewer</h1>
+  </div>
+  
+  <div class="token-form">
+    <input type="text" id="username-input" placeholder="Account nickname">
+    <textarea id="token-input" placeholder="Paste auth_token"></textarea>
+    <button id="save-token" class="primary-btn">Save Token</button>
+  </div>
+
+  <div class="account-list">
+    <h3>Switch Account</h3>
+    <select id="account-switcher">
+      <option value="">-- Select --</option>
+    </select>
+    <button id="view-full" class="secondary-btn">Open Full View</button>
+  </div>
+
+  <script src="index.js"></script>
+</body>
 </html>

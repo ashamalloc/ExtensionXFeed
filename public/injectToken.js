@@ -1,4 +1,7 @@
-// Script to inject auth_token into document.cookie
-function setAuthToken(token) {
-  document.cookie = `auth_token=${token}; path=/; domain=.twitter.com`;
-}
+import CryptoJS from 'crypto-js';
+
+export const encryptToken = (token, key) => 
+  CryptoJS.AES.encrypt(token, key).toString();
+
+export const decryptToken = (ciphertext, key) => 
+  CryptoJS.AES.decrypt(ciphertext, key).toString(CryptoJS.enc.Utf8);
