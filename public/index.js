@@ -1,12 +1,3 @@
-document.getElementById('account-switcher').addEventListener('change', (e) => {
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    chrome.runtime.sendMessage({
-      action: 'fetchFeed',
-      token: e.target.value === 'default' ? null : storedTokens[e.target.value]
-    });
-  });
-});
-
 document.getElementById('save-token').addEventListener('click', async () => {
   const accountName = document.getElementById('username-input').value.trim();
   const authToken = document.getElementById('token-input').value.trim();
@@ -16,44 +7,31 @@ document.getElementById('save-token').addEventListener('click', async () => {
     return;
   }
 
+  // Verify token first
+  const { valid, error, user } = await new Promise(resolve => {
+    chrome.runtime.sendMessage(
+      { action: 'checkToken', token: authToken },
+      resolve
+    );
+  });
+
+  if (!valid) {
+    showError(`Invalid token: ${error}`);
+    return;
+  }
+
+  // Save verified token
   try {
-    // Save to chrome.storage.local
     await chrome.storage.local.set({ 
-      [accountName]: authToken  // Saves as { "John's Feed": "abc123token" }
+      [accountName]: {
+        token: authToken,
+        username: user.username,
+        id: user.id
+      }
     });
     showSuccess("Token saved successfully!");
-    updateAccountList(); // Refresh dropdown
+    updateAccountList();
   } catch (error) {
     showError("Failed to save token: " + error.message);
   }
 });
-
-// Helper: Update account dropdown
-async function updateAccountList() {
-  const accounts = await chrome.storage.local.get(null);
-  const switcher = document.getElementById('account-switcher');
-  
-  switcher.innerHTML = '<option value="">-- Select Account --</option>';
-  Object.keys(accounts).forEach(account => {
-    if (account !== "undefined") {  // Skip undefined keys
-      const option = document.createElement('option');
-      option.value = account;
-      option.textContent = account;
-      switcher.appendChild(option);
-    }
-  });
-}
-
-
-document.getElementById('view-full').addEventListener('click', () => {
-  const account = document.getElementById('account-switcher').value;
-  chrome.windows.create({
-    url: `feed.html?account=${encodeURIComponent(account)}`,
-    type: 'popup',
-    width: 800,
-    height: 1000
-  });
-});
-
-// Load accounts on popup open
-updateAccountList();

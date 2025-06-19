@@ -74,4 +74,8 @@ function openFullView(accountName) {
     accountName
   });
 }
+setTimeout(() => {
+  const timeline = document.querySelector('[aria-label="Timeline"]');
+  // Your existing code
+}, 3000);
 new FeedRenderer();

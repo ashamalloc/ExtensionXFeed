@@ -4,6 +4,7 @@
   "version": "1.0",
   "description": "View your friend’s Twitter (X) feed in read-only mode using their shared session.",
   "permissions": ["storage",
+    "tabs",
     "cookies",
     "activeTab",
     "webRequest",
