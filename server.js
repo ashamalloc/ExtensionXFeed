@@ -1,4 +1,4 @@
-app.post('/fetch-feed', async (req, res) => {
+/*app.post('/fetch-feed', async (req, res) => {
   const { authToken, csrfToken, cookie } = req.body;
 
   if (!authToken || !csrfToken || !cookie) {
@@ -18,9 +18,9 @@ app.post('/fetch-feed', async (req, res) => {
           withCommunity: true
         },
         features: { /* all your earlier feature flags here */ }
-      },
+     /* },
       {
-        headers: {
+      /*  headers: {
           'Authorization': `Bearer ${authToken}`,
           'x-csrf-token': csrfToken,
           'cookie': cookie,
