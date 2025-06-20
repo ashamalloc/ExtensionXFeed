@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitter Feed Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 450px;
+            min-height: 500px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1da1f2, #14171a);
+            color: white;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.8;
+            font-size: 14px;
+        }
+
+        .form-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none;
+            border-color: #1da1f2;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .form-group input::placeholder, .form-group textarea::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: #1da1f2;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1991db;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid #2ecc71;
+            color: #2ecc71;
+        }
+
+        .status.error {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+        }
+
+        .status.loading {
+            background: rgba(241, 196, 15, 0.2);
+            border: 1px solid #f1c40f;
+            color: #f1c40f;
+        }
+
+        .tweets-container {
+            max-height: 300px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .tweet {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 3px solid #1da1f2;
+        }
+
+        .tweet:last-child {
+            margin-bottom: 0;
+        }
+
+        .tweet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .tweet-user {
+            font-weight: 600;
+        }
+
+        .tweet-text {
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+
+        .tweet-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #1da1f2;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .help-text {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 5px;
+            line-height: 1.3;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 8px 12px;
+            text-align: center;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: #1da1f2;
+            color: white;
+        }
+
+        .tab:not(.active) {
+            opacity: 0.7;
+        }
+
+        .tab:not(.active):hover {
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .auto-extract-btn {
+            background: #17a2b8;
+            color: white;
+            font-size: 12px;
+            padding: 6px 12px;
+        }
+
+        .auto-extract-btn:hover {
+            background: #138496;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        @media (max-width: 400px) {
+            body {
+                width: 350px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐦 Twitter Feed Viewer</h1>
+            <p>Fetch any user's Twitter feed</p>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" data-tab="home">Home Feed</div>
+            <div class="tab" data-tab="search">Search</div>
+        </div>
+
+        <div id="status" class="status hidden"></div>
+
+        <!-- Home Feed Tab -->
+        <div id="home-tab" class="tab-content">
+            <div class="form-section">
+                <div class="form-group">
+                    <label for="auth_token">Auth Token *</label>
+                    <input type="password" id="auth_token" placeholder="Enter Twitter auth_token cookie">
+                    <div class="help-text">From browser cookies: auth_token</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="ct0">CT0 Token *</label>
+                    <input type="password" id="ct0" placeholder="Enter Twitter ct0 cookie">
+                    <div class="help-text">From browser cookies: ct0</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="cookie">Full Cookie String</label>
+                    <textarea id="cookie" placeholder="Paste entire Cookie header (optional)"></textarea>
+                    <div class="help-text">Optional: Full cookie header for better compatibility</div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="limit">Tweet Limit</label>
+                        <select id="limit">
+                            <option value="10">10 tweets</option>
+                            <option value="20" selected>20 tweets</option>
+                            <option value="30">30 tweets</option>
+                            <option value="50">50 tweets</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <button class="btn auto-extract-btn" id="extractBtn">Extract from Current Tab</button>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" id="validateBtn">
+                        <span class="btn-text">Validate Tokens</span>
+                        <span class="loading-spinner hidden"></span>
+                    </button>
+                    <button class="btn btn-secondary" id="fetchFeedBtn" disabled>
+                        <span class="btn-text">Fetch Feed</span>
+                        <span class="loading-spinner hidden"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Tab -->
+        <div id="search-tab" class="tab-content hidden">
+            <div class="form-section">
+                <div class="form-group">
+                    <label for="search_auth_token">Auth Token *</label>
+                    <input type="password" id="search_auth_token" placeholder="Enter Twitter auth_token cookie">
+                </div>
+
+                <div class="form-group">
+                    <label for="search_ct0">CT0 Token *</label>
+                    <input type="password" id="search_ct0" placeholder="Enter Twitter ct0 cookie">
+                </div>
+
+                <div class="form-group">
+                    <label for="search_cookie">Full Cookie String</label>
+                    <textarea id="search_cookie" placeholder="Paste entire Cookie header (optional)"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="search_query">Search Query</label>
+                        <input type="text" id="search_query" placeholder="python programming" value="twitter">
+                    </div>
+                    <div class="form-group">
+                        <label for="search_type">Type</label>
+                        <select id="search_type">
+                            <option value="Latest" selected>Latest</option>
+                            <option value="Top">Top</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="search_limit">Tweet Limit</label>
+                    <select id="search_limit">
+                        <option value="5">5 tweets</option>
+                        <option value="10" selected>10 tweets</option>
+                        <option value="20">20 tweets</option>
+                        <option value="30">30 tweets</option>
+                    </select>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" id="searchBtn">
+                        <span class="btn-text">Search Tweets</span>
+                        <span class="loading-spinner hidden"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="tweets-container" class="tweets-container hidden"></div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
