@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitter Feed Mirror</title>
+    <link href="popup.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Twitter Feed Mirror</h1>
+            <p class="subtitle">Share your Twitter feed with friends</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="allow">Allow Permission</button>
+            <button class="tab-btn" data-tab="fetch">Fetch Friend's Feed</button>
+        </div>
+
+        <div class="tab-content active" id="allow-tab">
+            <div class="section">
+                <h3>Step 1: Extract Your Cookies</h3>
+                <p class="help-text">Click the button below to extract your Twitter authentication cookies</p>
+                <button id="extract-cookies" class="btn btn-primary">Extract Twitter Cookies</button>
+                <div id="extraction-status" class="status hidden"></div>
+            </div>
+
+            <div class="section">
+                <h3>Step 2: Get Validation Token</h3>
+                <p class="help-text">Validate your cookies to generate a token for friends</p>
+                <div class="input-group">
+                    <label for="api-endpoint">API Endpoint:</label>
+                    <input type="text" id="api-endpoint" placeholder="http://localhost:8000" value="http://localhost:8000">
+                </div>
+                <button id="validate-cookies" class="btn btn-secondary" disabled>Validate Cookies</button>
+                <div id="validation-status" class="status hidden"></div>
+            </div>
+
+            <div class="section">
+                <h3>Step 3: Share Your Token</h3>
+                <div id="token-display" class="token-box hidden">
+                    <label>Your Validation Token:</label>
+                    <div class="token-value" id="validation-token"></div>
+                    <button id="copy-token" class="btn btn-small">Copy Token</button>
+                </div>
+                <div id="pending-requests" class="hidden">
+                    <h4>Pending Friend Requests:</h4>
+                    <div id="requests-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="fetch-tab">
+            <div class="section">
+                <h3>Enter Friend's Token</h3>
+                <p class="help-text">Get this token from your friend who wants to share their feed</p>
+                <div class="input-group">
+                    <label for="friend-token">Friend's Validation Token:</label>
+                    <input type="text" id="friend-token" placeholder="Enter friend's validation token">
+                </div>
+                <div class="input-group">
+                    <label for="fetch-endpoint">API Endpoint:</label>
+                    <input type="text" id="fetch-endpoint" placeholder="http://localhost:8000" value="http://localhost:8000">
+                </div>
+                <button id="request-access" class="btn btn-primary">Request Access</button>
+                <div id="request-status" class="status hidden"></div>
+            </div>
+
+            <div class="section">
+                <h3>Friend's Twitter Feed</h3>
+                <div class="controls">
+                    <label for="tweet-limit">Number of tweets:</label>
+                    <select id="tweet-limit">
+                        <option value="10">10</option>
+                        <option value="20" selected>20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <button id="fetch-feed" class="btn btn-secondary" disabled>Fetch Feed</button>
+                    <button id="refresh-feed" class="btn btn-small hidden">Refresh</button>
+                </div>
+                <div id="feed-status" class="status hidden"></div>
+                <div id="feed-container" class="feed-container hidden">
+                    <div id="feed-header" class="feed-header"></div>
+                    <div id="tweets-list" class="tweets-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="help-links">
+                <button id="clear-storage" class="btn btn-small btn-danger">Clear All Data</button>
+                <span class="version">v1.0.0</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
