@@ -1,5 +1,3 @@
-
-
 function extractTwitterCookies() {
     console.log("Extracting Twitter cookies...");
     
