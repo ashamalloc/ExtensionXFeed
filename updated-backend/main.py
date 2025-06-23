@@ -17,14 +17,12 @@ from functools import wraps
 
 
 
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# In-memory storage
-VALIDATED_SESSIONS = {}  # Store user sessions (including friends)
-FRIEND_PERMISSIONS = {}  # Store friend permissions
-USER_PENDING_REQUESTS = {}  # Store pending requests per user
+VALIDATED_SESSIONS = {}  
+FRIEND_PERMISSIONS = {} 
+USER_PENDING_REQUESTS = {} 
 CLEANUP_THREAD = None
 
 def cleanup_expired_sessions():
@@ -52,7 +50,6 @@ def cleanup_expired_sessions():
             logger.error(f"Error in cleanup thread: {e}")
         threading.Event().wait(300)
 
-# Rate limiting decorator
 REQUEST_COUNTS = {}
 RATE_LIMIT_WINDOW = 60
 MAX_REQUESTS_PER_WINDOW = 30
@@ -158,7 +155,7 @@ class ApprovalResponse(BaseModel):
     expires_at: Optional[str] = None
     error: Optional[str] = None
 
-# Utility functions (unchanged)
+
 async def safe_await(coro):
     try:
         if coro is None:
@@ -491,18 +488,16 @@ async def get_pending_requests(request: PendingRequestsRequest):
         
         if validation_token not in VALIDATED_SESSIONS:
             raise HTTPException(status_code=404, detail="Validation token not found or expired")
-        
-        # Get pending requests for this user
+    
         pending_requests = USER_PENDING_REQUESTS.get(validation_token, [])
-        
-        # Filter only pending requests (not approved/denied)
+     
         current_time = datetime.now().timestamp()
         active_pending = [
             req for req in pending_requests 
             if req["status"] == "pending" and current_time < req["expires_at"]
         ]
         
-        # Get approved friends (from FRIEND_PERMISSIONS)
+     
         approved_friends = [
             {
                 "permission_token": token,
@@ -537,8 +532,7 @@ async def approve_request(request: ApprovalRequest):
     try:
         permission_token = request.permission_token
         approve = request.approve
-        
-        # Find the request in USER_PENDING_REQUESTS
+      
         request_data = None
         user_token = None
         
@@ -605,8 +599,7 @@ async def get_home_feed(request: HomeFeedRequest):
         if friend_token not in VALIDATED_SESSIONS:
             raise HTTPException(status_code=404, detail="Friend's validation token not found or expired")
         
-        # Check if we have permission to access this friend's feed
-        # Look for approved permission in FRIEND_PERMISSIONS
+    
         has_permission = False
         for permission_token, perm in FRIEND_PERMISSIONS.items():
             if (perm["friend_validation_token"] == friend_token and 
@@ -626,11 +619,11 @@ async def get_home_feed(request: HomeFeedRequest):
         
         logger.info(f"Fetching home feed for {user_info.get('screen_name', 'unknown')} (limit: {limit})")
         
-        # Try different methods to get home timeline
+       
         tweets_data = []
         
         try:
-            # Method 1: Try get_timeline
+         
             if hasattr(client, 'get_timeline'):
                 logger.info("Trying get_timeline method...")
                 timeline = await safe_await(client.get_timeline(count=limit))
@@ -639,7 +632,7 @@ async def get_home_feed(request: HomeFeedRequest):
                         tweet_data = await extract_tweet_data(tweet)
                         tweets_data.append(tweet_data)
             
-            # Method 2: Try get_home_timeline if available
+      
             elif hasattr(client, 'get_home_timeline'):
                 logger.info("Trying get_home_timeline method...")
                 timeline = await safe_await(client.get_home_timeline(count=limit))
@@ -648,7 +641,7 @@ async def get_home_feed(request: HomeFeedRequest):
                         tweet_data = await extract_tweet_data(tweet)
                         tweets_data.append(tweet_data)
             
-            # Method 3: Try search for recent tweets as fallback
+          
             else:
                 logger.info("Using search as fallback...")
                 search_results = await safe_await(client.search_tweet("", "Latest", count=limit))
@@ -659,7 +652,7 @@ async def get_home_feed(request: HomeFeedRequest):
         
         except Exception as e:
             logger.warning(f"Timeline fetch failed, using fallback: {e}")
-            # Create sample tweets as absolute fallback
+       
             tweets_data = [{
                 "id": f"fallback_{i}",
                 "text": f"Timeline access temporarily unavailable. This is a fallback message {i+1}.",
@@ -675,7 +668,7 @@ async def get_home_feed(request: HomeFeedRequest):
         
         logger.info(f"Retrieved {len(tweets_data)} tweets for home feed")
         
-        # Convert tweet data to TweetResponse objects
+ 
         tweet_responses = []
         for tweet_data in tweets_data:
             tweet_responses.append(TweetResponse(
