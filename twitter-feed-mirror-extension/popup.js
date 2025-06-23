@@ -1,4 +1,3 @@
-// Chrome Extension Popup JavaScript
 class TwitterFeedMirror {
     constructor() {
         this.apiEndpoint = 'http://localhost:8000';
@@ -17,28 +16,27 @@ class TwitterFeedMirror {
     }
 
     bindEvents() {
-        // Tab switching
+      
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => this.switchTab(e.target.dataset.tab));
         });
 
-        // Allow Permission tab events
+ 
         document.getElementById('extract-cookies').addEventListener('click', () => this.extractCookies());
         document.getElementById('validate-cookies').addEventListener('click', () => this.validateCookies());
         document.getElementById('copy-token').addEventListener('click', () => this.copyToken());
 
-        // Fetch Friend's Feed tab events
+     
         document.getElementById('request-access').addEventListener('click', () => this.requestAccess());
         document.getElementById('fetch-feed').addEventListener('click', () => this.fetchFeed());
         document.getElementById('refresh-feed').addEventListener('click', () => this.fetchFeed());
 
-        // Friend Requests tab events
         document.getElementById('refresh-requests').addEventListener('click', () => this.refreshPendingRequests());
 
-        // Utility events
+
         document.getElementById('clear-storage').addEventListener('click', () => this.clearStorage());
 
-        // Auto-save endpoint changes
+    
         document.getElementById('api-endpoint').addEventListener('change', (e) => {
             this.apiEndpoint = e.target.value;
             this.saveToStorage('apiEndpoint', this.apiEndpoint);
@@ -65,17 +63,17 @@ class TwitterFeedMirror {
     }
 
     switchTab(tabName) {
-        // Update tab buttons
+
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.tab === tabName);
         });
 
-        // Update tab content
+ 
         document.querySelectorAll('.tab-content').forEach(content => {
             content.classList.toggle('active', content.id === `${tabName}-tab`);
         });
 
-        // Load data when switching to requests tab
+
         if (tabName === 'requests' && this.validationToken) {
             this.refreshPendingRequests();
         }
@@ -110,7 +108,7 @@ class TwitterFeedMirror {
 
             if (result.friendToken) {
                 document.getElementById('friend-token').value = result.friendToken;
-                // Check if we have approval for this friend token
+              
                 this.checkFriendTokenStatus(result.friendToken);
             }
 
@@ -131,20 +129,20 @@ class TwitterFeedMirror {
         this.showStatus('extraction-status', 'Extracting Twitter cookies...', 'loading');
         
         try {
-            // Get current tab
+         
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
             
             if (!tab.url.includes('twitter.com') && !tab.url.includes('x.com')) {
                 throw new Error('Please navigate to Twitter/X.com first');
             }
 
-            // Get cookies from Twitter domain
+      
             const cookies = await chrome.cookies.getAll({ domain: '.twitter.com' });
             const xCookies = await chrome.cookies.getAll({ domain: '.x.com' });
             
             const allCookies = [...cookies, ...xCookies];
             
-            // Extract required cookies
+     
             const authToken = allCookies.find(cookie => cookie.name === 'auth_token')?.value;
             const ct0 = allCookies.find(cookie => cookie.name === 'ct0')?.value;
             
@@ -152,7 +150,7 @@ class TwitterFeedMirror {
                 throw new Error('Required Twitter cookies not found. Please log in to Twitter first.');
             }
 
-            // Build cookie string
+        
             const cookieString = allCookies
                 .map(cookie => `${cookie.name}=${cookie.value}`)
                 .join('; ');
@@ -185,7 +183,7 @@ class TwitterFeedMirror {
         console.log('Extracted cookies:', this.extractedCookies);
 
         try {
-            // Clean up the API endpoint URL
+         
             const cleanEndpoint = this.apiEndpoint.trim().replace(/\/$/, '');
             const fullUrl = `${cleanEndpoint}/validate-cookies`;
             console.log('Full URL:', fullUrl);
@@ -218,7 +216,7 @@ class TwitterFeedMirror {
         } catch (error) {
             console.error('Validation error:', error);
             
-            // More specific error messages
+  
             let errorMessage = 'Cannot connect to server';
             if (error.message.includes('Failed to fetch')) {
                 errorMessage = `Server not reachable at ${this.apiEndpoint}. Try: http://127.0.0.1:8000 or check if your local server is running`;
@@ -239,7 +237,7 @@ class TwitterFeedMirror {
         tokenValue.textContent = data.validation_token;
         tokenDisplay.classList.remove('hidden');
 
-        // Show user info if available
+  
         if (data.user) {
             const statusEl = document.getElementById('validation-status');
             statusEl.innerHTML = `
@@ -265,7 +263,7 @@ class TwitterFeedMirror {
     }
 
     startRequestPolling() {
-        // Poll for friend requests every 10 seconds
+      
         if (this.requestPollingInterval) {
             clearInterval(this.requestPollingInterval);
         }
@@ -274,7 +272,7 @@ class TwitterFeedMirror {
             this.checkPendingRequests();
         }, 10000);
         
-        // Initial check
+     
         this.checkPendingRequests();
     }
 
@@ -300,7 +298,7 @@ class TwitterFeedMirror {
                     this.approvedFriends = data.approved_friends || [];
                     this.updateRequestsBadge();
                     
-                    // Update UI if on requests tab
+                   
                     const requestsTab = document.getElementById('requests-tab');
                     if (requestsTab.classList.contains('active')) {
                         this.displayPendingRequests();
@@ -343,7 +341,7 @@ class TwitterFeedMirror {
             this.displayApprovedFriends();
             this.showStatus('requests-status', 'Requests updated', 'success');
             
-            // Hide status after 2 seconds
+          
             setTimeout(() => {
                 document.getElementById('requests-status').classList.add('hidden');
             }, 2000);
@@ -388,7 +386,7 @@ class TwitterFeedMirror {
             </div>
         `).join('');
 
-        // Add event listeners to action buttons
+   
         container.querySelectorAll('.approve-request').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const token = e.target.getAttribute('data-token');
@@ -435,7 +433,7 @@ class TwitterFeedMirror {
             </div>
         `).join('');
 
-        // Add event listeners to revoke buttons
+       
         container.querySelectorAll('.revoke-access').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const token = e.target.getAttribute('data-token');
@@ -445,7 +443,7 @@ class TwitterFeedMirror {
     }
 
     async handleFriendRequestAction(permissionToken, approve, buttonElement) {
-        // Add processing state to button
+     
         buttonElement.classList.add('processing');
         buttonElement.disabled = true;
         const originalText = buttonElement.textContent;
@@ -466,7 +464,7 @@ class TwitterFeedMirror {
             const data = await response.json();
 
             if (response.ok && data.success) {
-                // Remove the request item from the list
+               
                 const requestItem = buttonElement.closest('.request-item');
                 if (requestItem) {
                     requestItem.style.opacity = '0.5';
@@ -476,13 +474,13 @@ class TwitterFeedMirror {
                     }, 300);
                 }
 
-                // Update local arrays
+           
                 this.pendingRequests = this.pendingRequests.filter(
                     req => req.permission_token !== permissionToken
                 );
 
                 if (approve) {
-                    // Add to approved friends (this would need the friend data from API)
+                  
                     this.approvedFriends.push({
                         permission_token: permissionToken,
                         approved_at: new Date().toISOString(),
@@ -492,13 +490,13 @@ class TwitterFeedMirror {
 
                 this.updateRequestsBadge();
                 
-                // Show success message
+          
                 this.showStatus('requests-status', 
                     `Friend request ${approve ? 'approved' : 'denied'} successfully`, 
                     'success'
                 );
 
-                // Refresh the displays
+            
                 setTimeout(() => {
                     this.displayPendingRequests();
                     this.displayApprovedFriends();
@@ -511,13 +509,11 @@ class TwitterFeedMirror {
         } catch (error) {
             console.error('Error processing friend request:', error);
             this.showStatus('requests-status', `Error: ${error.message}`, 'error');
-            
-            // Restore button state
+           
             buttonElement.classList.remove('processing');
             buttonElement.disabled = false;
         }
 
-        // Hide status after 3 seconds
         setTimeout(() => {
             document.getElementById('requests-status').classList.add('hidden');
         }, 3000);
@@ -531,13 +527,12 @@ class TwitterFeedMirror {
             return;
         }
 
-        // First check if we already have approved access
         this.showStatus('request-status', 'Checking access status...', 'loading');
         
         try {
             const cleanEndpoint = this.apiEndpoint.trim().replace(/\/$/, '');
             
-            // Check if we already have permission by trying to fetch feed
+           
             const testResponse = await fetch(`${cleanEndpoint}/home-feed`, {
                 method: 'POST',
                 headers: {
@@ -550,14 +545,14 @@ class TwitterFeedMirror {
             });
 
             if (testResponse.ok) {
-                // We already have access!
+              
                 this.showStatus('request-status', 'Access already approved! You can fetch the feed.', 'success');
                 await this.saveToStorage('friendToken', friendToken);
                 document.getElementById('fetch-feed').disabled = false;
                 return;
             }
 
-            // If we don't have access, request it
+       
             this.showStatus('request-status', 'Requesting access...', 'loading');
             
             const response = await fetch(`${cleanEndpoint}/request-friend-feed`, {
@@ -576,7 +571,7 @@ class TwitterFeedMirror {
                 this.showStatus('request-status', 'Access requested! Waiting for friend approval...', 'info');
                 await this.saveToStorage('friendToken', friendToken);
                 
-                // Start polling to check for approval
+               
                 this.startApprovalPolling(friendToken);
             } else {
                 throw new Error(data.error || 'Access request failed');
@@ -589,12 +584,12 @@ class TwitterFeedMirror {
     }
 
     startApprovalPolling(friendToken) {
-        // Poll every 3 seconds to check if the friend has approved the request
+       
         const pollInterval = setInterval(async () => {
             try {
                 const cleanEndpoint = this.apiEndpoint.trim().replace(/\/$/, '');
                 
-                // Test if we have access now
+            
                 const testResponse = await fetch(`${cleanEndpoint}/home-feed`, {
                     method: 'POST',
                     headers: {
@@ -607,18 +602,18 @@ class TwitterFeedMirror {
                 });
 
                 if (testResponse.ok) {
-                    // Access approved!
+                  
                     clearInterval(pollInterval);
                     this.showStatus('request-status', 'Access approved! You can now fetch the feed.', 'success');
                     document.getElementById('fetch-feed').disabled = false;
                 }
             } catch (error) {
-                // Continue polling on error
+             
                 console.log('Polling for approval...', error.message);
             }
         }, 3000);
 
-        // Stop polling after 5 minutes
+    
         setTimeout(() => {
             clearInterval(pollInterval);
         }, 300000);
@@ -628,7 +623,7 @@ class TwitterFeedMirror {
         try {
             const cleanEndpoint = this.apiEndpoint.trim().replace(/\/$/, '');
             
-            // Test if we have access to this friend's feed
+         
             const testResponse = await fetch(`${cleanEndpoint}/home-feed`, {
                 method: 'POST',
                 headers: {
@@ -641,11 +636,11 @@ class TwitterFeedMirror {
             });
 
             if (testResponse.ok) {
-                // We have approved access
+             
                 this.showStatus('request-status', 'Access approved! You can fetch the feed.', 'success');
                 document.getElementById('fetch-feed').disabled = false;
             } else {
-                // No access yet - either pending or need to request
+               
                 this.showStatus('request-status', 'Click "Request Access" to ask for feed permission', 'info');
                 document.getElementById('fetch-feed').disabled = true;
             }
@@ -700,7 +695,7 @@ class TwitterFeedMirror {
         const header = document.getElementById('feed-header');
         const tweetsList = document.getElementById('tweets-list');
 
-        // Display feed header
+    
         header.innerHTML = `
             <div>
                 <strong>${data.authenticated_user.name}</strong>'s Twitter Feed
@@ -710,7 +705,7 @@ class TwitterFeedMirror {
             </div>
         `;
 
-        // Display tweets
+     
         tweetsList.innerHTML = data.tweets.map(tweet => this.renderTweet(tweet)).join('');
         
         container.classList.remove('hidden');
@@ -777,7 +772,7 @@ class TwitterFeedMirror {
     }
 }
 
-// Initialize the popup when DOM is loaded
+
 document.addEventListener('DOMContentLoaded', () => {
     new TwitterFeedMirror();
 });
