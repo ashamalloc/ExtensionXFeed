@@ -1,4 +1,3 @@
-
 class TwitterContentScript {
     constructor() {
         this.isTwitter = this.checkIfTwitter();
