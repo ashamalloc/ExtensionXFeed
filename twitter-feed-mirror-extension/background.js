@@ -1,4 +1,3 @@
-
 class BackgroundService {
     constructor() {
         this.init();
