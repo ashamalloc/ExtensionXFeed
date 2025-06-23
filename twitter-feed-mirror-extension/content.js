@@ -1,4 +1,4 @@
-// Content Script for Twitter Feed Mirror Extension
+
 class TwitterContentScript {
     constructor() {
         this.isTwitter = this.checkIfTwitter();
@@ -10,14 +10,13 @@ class TwitterContentScript {
         if (!this.isTwitter) return;
 
         console.log('Twitter Feed Mirror: Content script loaded');
-        
-        // Check authentication status
+
         this.checkAuthStatus();
         
-        // Monitor for authentication changes
+       
         this.monitorAuthChanges();
         
-        // Listen for messages from popup
+     
         chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             this.handleMessage(message, sender, sendResponse);
             return true;
@@ -31,7 +30,7 @@ class TwitterContentScript {
 
     async checkAuthStatus() {
         try {
-            // Check if user is logged in by looking for common authenticated elements
+            
             const authIndicators = [
                 '[data-testid="SideNav_AccountSwitcher_Button"]',
                 '[data-testid="AppTabBar_Profile_Link"]',
@@ -48,7 +47,7 @@ class TwitterContentScript {
                 }
             }
 
-            // Also check for username in URL or page content
+         
             if (!isAuthenticated) {
                 const urlMatch = window.location.pathname.match(/^\/[a-zA-Z0-9_]+$/);
                 const homeIndicator = document.querySelector('[data-testid="primaryColumn"]');
@@ -57,7 +56,7 @@ class TwitterContentScript {
 
             this.authStatus = isAuthenticated;
             
-            // Send status to background script
+     
             chrome.runtime.sendMessage({
                 type: 'UPDATE_BADGE',
                 data: { authenticated: isAuthenticated }
@@ -72,7 +71,7 @@ class TwitterContentScript {
     }
 
     monitorAuthChanges() {
-        // Monitor for navigation changes
+
         let currentUrl = window.location.href;
         
         const observer = new MutationObserver(() => {
@@ -87,12 +86,12 @@ class TwitterContentScript {
             subtree: true
         });
 
-        // Also monitor for login/logout events
+   
         this.monitorLoginLogout();
     }
 
     monitorLoginLogout() {
-        // Watch for login/logout buttons and forms
+  
         const loginSelectors = [
             '[data-testid="loginButton"]',
             '[data-testid="signupButton"]',
@@ -104,7 +103,7 @@ class TwitterContentScript {
             'a[href="/logout"]'
         ];
 
-        // Check periodically for auth changes
+
         setInterval(() => {
             const wasAuthenticated = this.authStatus;
             this.checkAuthStatus().then(isAuthenticated => {
@@ -162,8 +161,7 @@ class TwitterContentScript {
     }
 
     async getCookieInfo() {
-        // This returns information about what cookies are available
-        // The actual cookie extraction is done in the background script
+       
         return {
             domain: window.location.hostname,
             path: window.location.pathname,
@@ -174,10 +172,10 @@ class TwitterContentScript {
 
     async getUserInfo() {
         try {
-            // Try to extract user information from the page
+           
             const userInfo = {};
 
-            // Look for profile links and user data
+           
             const profileButton = document.querySelector('[data-testid="SideNav_AccountSwitcher_Button"]');
             if (profileButton) {
                 const nameElement = profileButton.querySelector('[dir="ltr"]');
@@ -186,7 +184,7 @@ class TwitterContentScript {
                 }
             }
 
-            // Look for username in URL or page elements
+           
             const usernameElement = document.querySelector('[data-testid="UserName"]');
             if (usernameElement) {
                 const handleElement = usernameElement.querySelector('[dir="ltr"]');
@@ -195,7 +193,7 @@ class TwitterContentScript {
                 }
             }
 
-            // Alternative method: check URL for username
+           
             const urlMatch = window.location.pathname.match(/^\/([a-zA-Z0-9_]+)$/);
             if (urlMatch && !userInfo.username) {
                 userInfo.username = urlMatch[1];
@@ -210,7 +208,7 @@ class TwitterContentScript {
     }
 
     showInPageNotification(data) {
-        // Create and show an in-page notification
+       
         const notification = document.createElement('div');
         notification.style.cssText = `
             position: fixed;
@@ -235,7 +233,7 @@ class TwitterContentScript {
 
         document.body.appendChild(notification);
 
-        // Auto-remove after 5 seconds
+      
         setTimeout(() => {
             notification.style.transform = 'translateX(100%)';
             notification.style.opacity = '0';
@@ -246,7 +244,7 @@ class TwitterContentScript {
             }, 300);
         }, 5000);
 
-        // Click to dismiss
+        
         notification.addEventListener('click', () => {
             notification.style.transform = 'translateX(100%)';
             notification.style.opacity = '0';
@@ -259,7 +257,7 @@ class TwitterContentScript {
     }
 
     showFriendRequestNotification(data) {
-        // Create and show an in-page friend request notification
+     
         const notification = document.createElement('div');
         notification.style.cssText = `
             position: fixed;
@@ -309,7 +307,7 @@ class TwitterContentScript {
             </div>
         `;
 
-        // Add event listeners to buttons
+  
         const approveBtn = notification.querySelector('.friend-req-approve');
         const denyBtn = notification.querySelector('.friend-req-deny');
 
@@ -325,7 +323,6 @@ class TwitterContentScript {
 
         document.body.appendChild(notification);
 
-        // Auto-remove after 30 seconds
         setTimeout(() => {
             if (notification.parentNode) {
                 notification.parentNode.removeChild(notification);
@@ -343,7 +340,7 @@ class TwitterContentScript {
                 }
             });
 
-            // Show success notification
+           
             this.showInPageNotification({
                 message: `Friend request ${approve ? 'approved' : 'denied'} successfully`
             });
@@ -357,7 +354,7 @@ class TwitterContentScript {
     }
 }
 
-// Initialize content script when DOM is ready
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         new TwitterContentScript();
