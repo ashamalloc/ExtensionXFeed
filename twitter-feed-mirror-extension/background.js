@@ -1,11 +1,11 @@
-// Background Service Worker for Twitter Feed Mirror Extension
+
 class BackgroundService {
     constructor() {
         this.init();
     }
 
     init() {
-        // Handle extension installation
+       
         chrome.runtime.onInstalled.addListener((details) => {
             if (details.reason === 'install') {
                 console.log('Twitter Feed Mirror extension installed');
@@ -13,27 +13,27 @@ class BackgroundService {
             }
         });
 
-        // Handle messages from popup and content scripts
+       
         chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             this.handleMessage(message, sender, sendResponse);
-            return true; // Keep the message channel open for async responses
+            return true; 
         });
 
-        // Handle tab updates to check for Twitter pages
+       
         chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
             if (changeInfo.status === 'complete' && this.isTwitterUrl(tab.url)) {
                 this.updateBadge(tabId);
             }
         });
 
-        // Handle cookie changes
+       
         chrome.cookies.onChanged.addListener((changeInfo) => {
             if (this.isTwitterCookie(changeInfo.cookie)) {
                 this.handleCookieChange(changeInfo);
             }
         });
 
-        // Handle notifications clicks
+      
         chrome.notifications.onClicked.addListener((notificationId) => {
             this.handleNotificationClick(notificationId);
         });
@@ -93,13 +93,13 @@ class BackgroundService {
 
     async extractTwitterCookies() {
         try {
-            // Get cookies from both twitter.com and x.com
+            
             const twitterCookies = await chrome.cookies.getAll({ domain: '.twitter.com' });
             const xCookies = await chrome.cookies.getAll({ domain: '.x.com' });
             
             const allCookies = [...twitterCookies, ...xCookies];
             
-            // Find required cookies
+            
             const authToken = allCookies.find(cookie => cookie.name === 'auth_token')?.value;
             const ct0 = allCookies.find(cookie => cookie.name === 'ct0')?.value;
             
@@ -107,9 +107,8 @@ class BackgroundService {
                 throw new Error('Required Twitter authentication cookies not found');
             }
 
-            // Build full cookie string
-            const cookieString = allCookies
-                .filter(cookie => cookie.value) // Only include non-empty cookies
+           
+                .filter(cookie => cookie.value) 
                 .map(cookie => `${cookie.name}=${cookie.value}`)
                 .join('; ');
 
@@ -153,7 +152,7 @@ class BackgroundService {
                 { title: 'Deny' }
             ];
             
-            // Store request data for handling button clicks
+          
             await chrome.storage.local.set({
                 [`notification_${data.id}`]: {
                     permissionToken: data.permissionToken,
@@ -167,20 +166,20 @@ class BackgroundService {
     }
 
     async handleNotificationClick(notificationId) {
-        // Open popup when notification is clicked
+        
         try {
             await chrome.action.openPopup();
         } catch (error) {
             console.error('Failed to open popup:', error);
         }
         
-        // Clear the notification
+       
         chrome.notifications.clear(notificationId);
     }
 
     async handleNotificationButtonClick(notificationId, buttonIndex) {
         try {
-            // Get stored request data
+            
             const result = await chrome.storage.local.get(`notification_${notificationId}`);
             const requestData = result[`notification_${notificationId}`];
             
@@ -189,9 +188,9 @@ class BackgroundService {
                 return;
             }
 
-            const approve = buttonIndex === 0; // First button is "Approve"
+            const approve = buttonIndex === 0; 
             
-            // Send approval/denial to API
+            
             const settings = await chrome.storage.local.get('settings');
             const apiEndpoint = settings.settings?.apiEndpoint || 'http://localhost:8000';
             
@@ -209,7 +208,7 @@ class BackgroundService {
             const data = await response.json();
             
             if (response.ok && data.success) {
-                // Show success notification
+               
                 await this.showNotification({
                     id: `approval_${Date.now()}`,
                     message: `Friend request ${approve ? 'approved' : 'denied'} successfully`,
@@ -228,13 +227,13 @@ class BackgroundService {
             });
         }
         
-        // Clear the original notification and stored data
+       
         chrome.notifications.clear(notificationId);
         chrome.storage.local.remove(`notification_${notificationId}`);
     }
 
     async handleFriendRequestAction(data) {
-        // This handles friend request actions from popup
+        
         try {
             const settings = await chrome.storage.local.get('settings');
             const apiEndpoint = settings.settings?.apiEndpoint || 'http://localhost:8000';
@@ -303,14 +302,14 @@ class BackgroundService {
     }
 
     async handleCookieChange(changeInfo) {
-        // Log important cookie changes for debugging
+      
         if (changeInfo.removed) {
             console.log(`Twitter cookie removed: ${changeInfo.cookie.name}`);
         } else {
             console.log(`Twitter cookie updated: ${changeInfo.cookie.name}`);
         }
 
-        // Notify popup if it's open
+  
         try {
             await chrome.runtime.sendMessage({
                 type: 'COOKIE_CHANGED',
@@ -320,10 +319,10 @@ class BackgroundService {
                 }
             });
         } catch (error) {
-            // Popup might not be open, ignore error
+            
         }
     }
 }
 
-// Initialize the background service
+
 new BackgroundService();
