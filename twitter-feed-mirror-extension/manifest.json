@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "Twitter Feed Mirror",
+  "version": "1.0.0",
+  "description": "Share your Twitter feed with friends securely",
+  "permissions": [
+    "activeTab",
+    "cookies",
+    "storage",
+    "notifications"
+  ],
+  "host_permissions": [
+    "https://twitter.com/*",
+    "https://x.com/*",
+    "http://localhost:*",
+    "http://127.0.0.1:*",
+    "http://0.0.0.0:*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://twitter.com/*", "https://x.com/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Twitter Feed Mirror"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
