@@ -1,6 +1,6 @@
-# FeedMirror Project
+# ExtensionXFeed Project
 
-FeedMirror is a two-part project consisting of a Python FastAPI backend and a Chrome extension frontend. The system allows users to view Twitter (X) feeds using authentication tokens, providing a seamless experience between the browser extension and backend API.
+ExtensionXFeed is a two-part project consisting of a Python FastAPI backend and a Chrome extension frontend. The system allows users to view Twitter (X) feeds using authentication tokens, providing a seamless experience between the browser extension and backend API.
 
 ---
 
