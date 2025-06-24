@@ -8,11 +8,11 @@ FeedMirror is a two-part project consisting of a Python FastAPI backend and a Ch
 
 ```
 feedmirror-project-2/
-├── feedmirror-backend/   # FastAPI backend for Twitter feed mirroring
+├── twitter-feedmirror-backend/   # FastAPI backend for Twitter feed mirroring
 │   ├── main.py           # Main FastAPI application
 │   ├── requirements.txt  # Python dependencies
 │   └── ...
-└── feedmirror-frontend/  # Chrome extension frontend
+└── updated-frontend/  # Chrome extension frontend
     ├── manifest.json     # Chrome extension manifest (v3)
     ├── background.js     # Background service worker
     ├── content.js        # Content script for Twitter/X
