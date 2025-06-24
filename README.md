@@ -15,18 +15,18 @@ A Chrome extension + backend project that allows one Twitter user to share their
 
 ---
 
-## ⚙️ Tech Stack
+## ⚙Tech Stack
 
 - **Frontend (Extension)**: HTML, CSS, JavaScript
 - **Twitter Feed Access**: `twikit`, DOM scraping (as fallback)
-- **Backend**: Python (Flask or FastAPI)
+- **Backend**: Python (FastAPI)
 - **Browser API**: Chrome Extensions API, localStorage
-- **Communication**: Fetch API + CORS proxy setup (if required)
+- **Communication**: Fetch API + CORS proxy setup 
 - **Token Management**: Cookie extraction, user approval, token sharing
 
 ---
 
-## 📂 Folder Structure
+##  Folder Structure
 
 ExtensionXFeed/
 ├── updated-frontend/
