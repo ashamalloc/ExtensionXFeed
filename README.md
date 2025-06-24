@@ -1,97 +1,111 @@
-# ExtensionXFeed Project
+# Twitter Feed Viewer via Shared Token Extension
 
-ExtensionXFeed is a two-part project consisting of a Python FastAPI backend and a Chrome extension frontend. The system allows users to view Twitter (X) feeds using authentication tokens, providing a seamless experience between the browser extension and backend API.
+A Chrome extension + backend project that allows one Twitter user to share their feed access (read-only) with another user via a session token. The extension uses cookie-based token extraction, user consent notification, and backend validation to allow secure sharing of Twitter feeds.
 
----
+##  Features
 
-## Project Structure
-
-```
-feedmirror-project-2/
-├── twitter-feedmirror-backend/   # FastAPI backend for Twitter feed mirroring
-│   ├── main.py           # Main FastAPI application
-│   ├── requirements.txt  # Python dependencies
-│   └── ...
-└── updated-frontend/  # Chrome extension frontend
-    ├── manifest.json     # Chrome extension manifest (v3)
-    ├── background.js     # Background service worker
-    ├── content.js        # Content script for Twitter/X
-    ├── popup.html        # Extension popup UI
-    ├── popup.js          # Popup logic
-    ├── package.json      # Frontend dependencies (React)
-    └── ...
-```
+- Chrome extension to extract session token from Twitter (twid and auth_token)
+- Token validation and user authentication via Python backend
+- Secure request & approval system for token sharing
+- Shared token enables fetching and displaying of Twitter feeds (10/20/30/40 tweets)
+- Read-only access for the receiver
+- UI with feed display in the extension popup or app page
+- DOM manipulation and Twikit used to fetch data
+- Real-time notifications and consent system
 
 ---
 
-## Backend: FastAPI (feedmirror-backend)
+## ⚙️ Tech Stack
 
-- **Framework:** FastAPI
-- **Main file:** `main.py`
-- **Dependencies:**
-  - fastapi
-  - uvicorn
-  - twikit
-  - pydantic
-- **Features:**
-  - Provides API endpoints for authentication and fetching Twitter feeds
-  - Uses in-memory session validation with expiration
-  - CORS enabled for frontend communication
+- **Frontend (Extension)**: HTML, CSS, JavaScript
+- **Twitter Feed Access**: `twikit`, DOM scraping (as fallback)
+- **Backend**: Python (Flask or FastAPI)
+- **Browser API**: Chrome Extensions API, localStorage
+- **Communication**: Fetch API + CORS proxy setup (if required)
+- **Token Management**: Cookie extraction, user approval, token sharing
 
-### Setup & Run
-```bash
-# Install dependencies
+---
+
+## 📂 Folder Structure
+
+ExtensionXFeed/
+├── updated-frontend/
+│ ├── manifest.json
+│ ├── background.js
+│ ├── popup.js
+│ ├── popup.html
+│ ├── content.js
+│ ├── popup.css
+│ ├── extract_cookies.js
+│ └── icons/
+│ └── icon.png
+├──twitter-feed-mirror-extension/
+│ ├── main.py
+│ ├── requirements.txt
+
+---
+
+## Project Workflow
+
+### 1. **Token Extraction**
+
+- User A installs the extension and logs into Twitter
+- Clicks **“Extract Token”** in popup
+- The extension fetches session cookie 
+- Sends token to backend for validation
+
+### 2. **Authentication & Token Sharing**
+
+- Backend validates that token is live by calling Twitter's internal APIs
+- User A can **share token** via copying the token ID or link
+- User B pastes this token in their extension/app
+
+### 3. **Approval Notification**
+
+- User A gets a **notification popup** in their extension:
+  - "User B wants to access your feed"
+  - Buttons: **Approve / Reject**
+- If approved, backend marks the token as shared and linked to User B
+
+### 4. **Feed Fetching**
+
+- User B now uses the shared token to fetch User A's Twitter feed via the backend
+- Backend proxies feed fetch request using Twikit or Twitter web API calls
+- User B can view User A's timeline in the extension/app (10/20/30 tweets, as selected)
+
+---
+
+## Security & Privacy
+
+- Only **read-only access**; no write/delete/post operations
+- Consent-based token sharing — no unauthorized access
+- Token stored in memory 
+- Token expires when the user logs out of Twitter and is valid for 1 day
+
+---
+
+## Setup Instructions
+
+### Backend (Python Flask Example)
+
+1. Create a virtual environment and install dependencies:
+
+bash
+cd server/
+python -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 
-# Run the FastAPI server
-uvicorn main:app --reload
-```
+2. Start Server
+uvicorn main:app --reload --port 5000
 
----
+### Chrome Extension
 
-## Frontend: Chrome Extension (feedmirror-frontend)
-
-- **Manifest Version:** 3
-- **Tech Stack:** React (for popup UI), vanilla JS for background/content scripts
-- **Key Files:**
-  - `manifest.json`: Extension configuration
-  - `background.js`: Handles background tasks and API communication
-  - `content.js`: Injected into Twitter/X pages
-  - `popup.html` & `popup.js`: User interface
-  - `package.json`: React dependencies and build scripts
-- **Permissions:**
-  - Storage, activeTab, access to Twitter/X and backend API
-
-### Setup & Build
-```bash
-# Install dependencies
-npm install
-
-# Build the extension
-npm run build
-```
-
-### Load Extension in Chrome
 1. Go to `chrome://extensions/`
-2. Enable "Developer mode"
-3. Click "Load unpacked" and select the `feedmirror-frontend` folder
+2. Enable **Developer Mode**
+3. Click **Load Unpacked** and select the `ExtensionXFeed/updated-frontend` folder
+4. Log in to Twitter on a new tab
+5. Click the extension twiiter feed extension
+6. Click on extract twitter cookies tab
 
----
 
-## Usage
-1. Start the backend FastAPI server.
-2. Load the Chrome extension in your browser.
-3. Use the popup to authenticate and view Twitter feeds.
-
----
-
-## Authors
-- Asha Kumari
-- Tvisha
-- Manisha
-
----
-
-## Notes
-- Ensure you have valid Twitter authentication tokens for full functionality.
-- The backend uses in-memory session storage; for production, consider persistent storage and enhanced security.
