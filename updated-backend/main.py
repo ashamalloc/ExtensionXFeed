@@ -17,100 +17,13 @@ from functools import wraps
 
 
 
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Persistent storage files
-STORAGE_DIR = "data"
-SESSIONS_FILE = os.path.join(STORAGE_DIR, "sessions.json")
-PERMISSIONS_FILE = os.path.join(STORAGE_DIR, "permissions.json")
-REQUESTS_FILE = os.path.join(STORAGE_DIR, "requests.json")
-
-# In-memory storage (loaded from files)
-VALIDATED_SESSIONS = {}  # Store user sessions (including friends)
-FRIEND_PERMISSIONS = {}  # Store friend permissions
-USER_PENDING_REQUESTS = {}  # Store pending requests per user
+VALIDATED_SESSIONS = {}  
+FRIEND_PERMISSIONS = {} 
+USER_PENDING_REQUESTS = {} 
 CLEANUP_THREAD = None
-
-def ensure_storage_dir():
-    """Create storage directory if it doesn't exist"""
-    if not os.path.exists(STORAGE_DIR):
-        os.makedirs(STORAGE_DIR)
-
-def load_data_from_files():
-    """Load data from persistent storage files"""
-    global VALIDATED_SESSIONS, FRIEND_PERMISSIONS, USER_PENDING_REQUESTS
-    
-    ensure_storage_dir()
-    
-    # Load sessions
-    if os.path.exists(SESSIONS_FILE):
-        try:
-            with open(SESSIONS_FILE, 'r') as f:
-                VALIDATED_SESSIONS = json.load(f)
-            logger.info(f"Loaded {len(VALIDATED_SESSIONS)} sessions from storage")
-        except Exception as e:
-            logger.error(f"Error loading sessions: {e}")
-            VALIDATED_SESSIONS = {}
-    
-    # Load permissions
-    if os.path.exists(PERMISSIONS_FILE):
-        try:
-            with open(PERMISSIONS_FILE, 'r') as f:
-                FRIEND_PERMISSIONS = json.load(f)
-            logger.info(f"Loaded {len(FRIEND_PERMISSIONS)} permissions from storage")
-        except Exception as e:
-            logger.error(f"Error loading permissions: {e}")
-            FRIEND_PERMISSIONS = {}
-    
-    # Load requests
-    if os.path.exists(REQUESTS_FILE):
-        try:
-            with open(REQUESTS_FILE, 'r') as f:
-                USER_PENDING_REQUESTS = json.load(f)
-            logger.info(f"Loaded {len(USER_PENDING_REQUESTS)} pending requests from storage")
-        except Exception as e:
-            logger.error(f"Error loading requests: {e}")
-            USER_PENDING_REQUESTS = {}
-
-def save_data_to_files():
-    """Save data to persistent storage files"""
-    ensure_storage_dir()
-    
-    try:
-        # Save sessions (exclude non-serializable Client objects)
-        sessions_to_save = {}
-        for token, session in VALIDATED_SESSIONS.items():
-            # Convert TokenInput to dict if needed
-            tokens_data = session.get("tokens")
-            if hasattr(tokens_data, '__dict__'):
-                tokens_data = {
-                    "auth_token": tokens_data.auth_token,
-                    "ct0": tokens_data.ct0,
-                    "cookie": tokens_data.cookie
-                }
-            
-            sessions_to_save[token] = {
-                "user_info": session.get("user_info"),
-                "created_at": session.get("created_at"),
-                "expires_at": session.get("expires_at"),
-                "tokens": tokens_data
-            }
-        
-        with open(SESSIONS_FILE, 'w') as f:
-            json.dump(sessions_to_save, f, indent=2)
-        
-        # Save permissions
-        with open(PERMISSIONS_FILE, 'w') as f:
-            json.dump(FRIEND_PERMISSIONS, f, indent=2)
-        
-        # Save requests
-        with open(REQUESTS_FILE, 'w') as f:
-            json.dump(USER_PENDING_REQUESTS, f, indent=2)
-            
-    except Exception as e:
-        logger.error(f"Error saving data: {e}")
 
 def cleanup_expired_sessions():
     """Background thread to clean up expired sessions and permissions"""
@@ -137,7 +50,6 @@ def cleanup_expired_sessions():
             logger.error(f"Error in cleanup thread: {e}")
         threading.Event().wait(300)
 
-# Rate limiting decorator
 REQUEST_COUNTS = {}
 RATE_LIMIT_WINDOW = 60
 MAX_REQUESTS_PER_WINDOW = 30
@@ -160,20 +72,13 @@ def rate_limit(func):
 async def lifespan(app: FastAPI):
     global CLEANUP_THREAD
     logger.info("Starting Twitter Feed API")
-    
-    # Load data from persistent storage
-    load_data_from_files()
-    
     CLEANUP_THREAD = threading.Thread(target=cleanup_expired_sessions, daemon=True)
     CLEANUP_THREAD.start()
     yield
-    
-    # Save data before shutting down
-    save_data_to_files()
     logger.info("Shutting down Twitter Feed API")
 
 app = FastAPI(title="Twitter Feed API", description="API for fetching Twitter feeds with friend access", version="1.2.2", lifespan=lifespan)
-app.add_middleware(CORSMiddleware, allow_origins=["chrome-extension://*", "chrome-extension://adpbkacpemdgablnjccamljnhpekenpl", "http://localhost:8000", "http://127.0.0.1:8000"], allow_credentials=True, allow_methods=['*'], allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_origins=["chrome-extension://*", "chrome-extension://dpfpajeeohpfakmlmknedeegppcdefdp", "http://localhost:8000", "http://127.0.0.1:8000"], allow_credentials=True, allow_methods=['*'], allow_headers=["*"])
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],     
@@ -250,7 +155,7 @@ class ApprovalResponse(BaseModel):
     expires_at: Optional[str] = None
     error: Optional[str] = None
 
-# Utility functions (unchanged)
+
 async def safe_await(coro):
     try:
         if coro is None:
@@ -511,10 +416,6 @@ async def validate_cookies(tokens: TokenInput):
             }
         }
         logger.info(f"Session created for user: {user_info.get('screen_name', 'unknown')} (token: {validation_token[:8]}...)")
-        
-        # Save to persistent storage
-        save_data_to_files()
-        
         return ValidationResponse(
             valid=True,
             user=user_info,
@@ -564,9 +465,6 @@ async def request_friend_feed(request: FriendRequest):
         
         logger.info(f"Friend feed request created: {permission_token[:8]}... for friend {friend_token[:8]}...")
         
-        # Save to persistent storage
-        save_data_to_files()
-        
         return PermissionResponse(
             success=True,
             friend_validation_token=friend_token,
@@ -590,18 +488,16 @@ async def get_pending_requests(request: PendingRequestsRequest):
         
         if validation_token not in VALIDATED_SESSIONS:
             raise HTTPException(status_code=404, detail="Validation token not found or expired")
-        
-        # Get pending requests for this user
+    
         pending_requests = USER_PENDING_REQUESTS.get(validation_token, [])
-        
-        # Filter only pending requests (not approved/denied)
+     
         current_time = datetime.now().timestamp()
         active_pending = [
             req for req in pending_requests 
             if req["status"] == "pending" and current_time < req["expires_at"]
         ]
         
-        # Get approved friends (from FRIEND_PERMISSIONS)
+     
         approved_friends = [
             {
                 "permission_token": token,
@@ -636,8 +532,7 @@ async def approve_request(request: ApprovalRequest):
     try:
         permission_token = request.permission_token
         approve = request.approve
-        
-        # Find the request in USER_PENDING_REQUESTS
+      
         request_data = None
         user_token = None
         
@@ -680,9 +575,6 @@ async def approve_request(request: ApprovalRequest):
         else:
             logger.info(f"Request denied: {permission_token[:8]}...")
         
-        # Save to persistent storage
-        save_data_to_files()
-        
         return ApprovalResponse(
             success=True,
             permission_token=permission_token,
@@ -707,8 +599,7 @@ async def get_home_feed(request: HomeFeedRequest):
         if friend_token not in VALIDATED_SESSIONS:
             raise HTTPException(status_code=404, detail="Friend's validation token not found or expired")
         
-        # Check if we have permission to access this friend's feed
-        # Look for approved permission in FRIEND_PERMISSIONS
+    
         has_permission = False
         for permission_token, perm in FRIEND_PERMISSIONS.items():
             if (perm["friend_validation_token"] == friend_token and 
@@ -728,11 +619,11 @@ async def get_home_feed(request: HomeFeedRequest):
         
         logger.info(f"Fetching home feed for {user_info.get('screen_name', 'unknown')} (limit: {limit})")
         
-        # Try different methods to get home timeline
+       
         tweets_data = []
         
         try:
-            # Method 1: Try get_timeline
+         
             if hasattr(client, 'get_timeline'):
                 logger.info("Trying get_timeline method...")
                 timeline = await safe_await(client.get_timeline(count=limit))
@@ -741,7 +632,7 @@ async def get_home_feed(request: HomeFeedRequest):
                         tweet_data = await extract_tweet_data(tweet)
                         tweets_data.append(tweet_data)
             
-            # Method 2: Try get_home_timeline if available
+      
             elif hasattr(client, 'get_home_timeline'):
                 logger.info("Trying get_home_timeline method...")
                 timeline = await safe_await(client.get_home_timeline(count=limit))
@@ -750,7 +641,7 @@ async def get_home_feed(request: HomeFeedRequest):
                         tweet_data = await extract_tweet_data(tweet)
                         tweets_data.append(tweet_data)
             
-            # Method 3: Try search for recent tweets as fallback
+          
             else:
                 logger.info("Using search as fallback...")
                 search_results = await safe_await(client.search_tweet("", "Latest", count=limit))
@@ -761,7 +652,7 @@ async def get_home_feed(request: HomeFeedRequest):
         
         except Exception as e:
             logger.warning(f"Timeline fetch failed, using fallback: {e}")
-            # Create sample tweets as absolute fallback
+       
             tweets_data = [{
                 "id": f"fallback_{i}",
                 "text": f"Timeline access temporarily unavailable. This is a fallback message {i+1}.",
@@ -777,7 +668,7 @@ async def get_home_feed(request: HomeFeedRequest):
         
         logger.info(f"Retrieved {len(tweets_data)} tweets for home feed")
         
-        # Convert tweet data to TweetResponse objects
+ 
         tweet_responses = []
         for tweet_data in tweets_data:
             tweet_responses.append(TweetResponse(
