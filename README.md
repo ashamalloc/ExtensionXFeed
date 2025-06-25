@@ -27,7 +27,7 @@ requirement.py contains all dependencies needed to run the backend uvicorn is pl
 
 All API-endpoints tested on Postman as well and verified.
 
-CORS error solved by allowOrigins=["*"], user can change extension id as well if error is encountered in integrating backend and frontend. Data such as validation tokens and user data stored in memory but can be changed to use data base or .json files.
+CORS error solved by allowOrigins=["*"], user can change extension id as well if error is encountered in integrating backend and frontend. Data such as validation tokens and user data stored in memory as well as in json files like session.json, requests.json and permission.josn.
 
 Load the frontend on chrome as load unpacked and pin the extension if u want.
 File Structure
