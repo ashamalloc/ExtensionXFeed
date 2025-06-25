@@ -45,6 +45,7 @@ No build step is required; edit files directly and reload the extension in Chrom
 
 
 Friend’s Role: The friend uses a browser extension to automatically extract their Twitter cookies, which are validated by a backend API to generate a validation_token. The friend then approves the user’s request to access their feeed.
+
 User’s Role: The user enters the friend’s validation_token (shared after approval) to fetch and display the friend’s Twitter home feed.
 
 Workflow:
