@@ -20,6 +20,9 @@ Chrome Browser: Version 88 or higher.
 Node.js and Python: For running the local API server (optional, for development).
 Local Server: A FastAPI server (e.g., main.py) running on http://localhost:8000.
 
+Scalability:
+JSON files are not ideal for high-concurrency applications. Frequent reads/writes may cause performance bottlenecks or file corruption.
+Fix: For production, consider a database (e.g., SQLite, PostgreSQL) or a key-value store (e.g., Redis) for better scalability and atomicity.
 
 HOW TO USE:
 main.py-backend 
@@ -41,8 +44,6 @@ extract_cookies_manual.js: Manual cookie extraction script for debugging.
 icons/: Icon files for the extension.
 
 No build step is required; edit files directly and reload the extension in Chrome.
-
-
 
 Friend’s Role: The friend uses a browser extension to automatically extract their Twitter cookies, which are validated by a backend API to generate a validation_token. The friend then approves the user’s request to access their feeed.
 
