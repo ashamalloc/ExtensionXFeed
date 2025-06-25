@@ -173,6 +173,7 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down Twitter Feed API")
 
 app = FastAPI(title="Twitter Feed API", description="API for fetching Twitter feeds with friend access", version="1.2.2", lifespan=lifespan)
+#can be commented out as allow origins allows all
 app.add_middleware(CORSMiddleware, allow_origins=["chrome-extension://*", "chrome-extension://adpbkacpemdgablnjccamljnhpekenpl", "http://localhost:8000", "http://127.0.0.1:8000"], allow_credentials=True, allow_methods=['*'], allow_headers=["*"])
 app.add_middleware(
     CORSMiddleware,
