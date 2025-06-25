@@ -56,5 +56,15 @@ Friend view the request via validation token and returns a list of pending reque
 Friend approves the request via,input is permission token, moves permission token to FRIEND_PERMISSIONS storage /approve-request.
 Searches FRIEND_PERMISSIONS for any approved permission token that grants access to that friend's feed ,User fetches the feed via /home-feed using the validation_token.
 
+Storage
+The data folder is created by the script itself.
+Automatic Creation:
+The ensure_storage_dir function checks if the data folder exists in the CWD using os.path.exists(STORAGE_DIR).
+If it doesn’t exist, os.makedirs(STORAGE_DIR) creates it.
+This function is called before any file operations (e.g., in load_data_from_files and save_data_to_files), ensuring the folder is present when needed.
 
+The folder is created the first time the script runs and attempts to read or write to the JSON files (e.g., when you hit endpoints like /validate-cookies, /request-friend-feed, or /approve-request).
+For example, calling /validate-cookies triggers save_data_to_files, which calls ensure_storage_dir, creating the data folder if it’s missing.
+
+The data folder is created in the CWD (e.g., /path/to/project/data/ if you run python main.py from /path/to/project/).This is because STORAGE_DIR = "data" is a relative path.
 
