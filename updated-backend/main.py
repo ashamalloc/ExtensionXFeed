@@ -17,7 +17,7 @@ from functools import wraps
 
 
 
-# Configure logging
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -28,9 +28,9 @@ PERMISSIONS_FILE = os.path.join(STORAGE_DIR, "permissions.json")
 REQUESTS_FILE = os.path.join(STORAGE_DIR, "requests.json")
 
 # In-memory storage (loaded from files)
-VALIDATED_SESSIONS = {}  # Store user sessions (including friends)
-FRIEND_PERMISSIONS = {}  # Store friend permissions
-USER_PENDING_REQUESTS = {}  # Store pending requests per user
+VALIDATED_SESSIONS = {}  
+FRIEND_PERMISSIONS = {} 
+USER_PENDING_REQUESTS = {}  
 CLEANUP_THREAD = None
 
 def ensure_storage_dir():
